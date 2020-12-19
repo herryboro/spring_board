@@ -16,7 +16,7 @@ public class BoardService {
 	@Autowired
 	private BoardMapper mapper;
 	
-	public List<BoardVO> list(PageObject pageObject) {
+	public List<BoardVO> list(PageObject pageObject) {	
 		pageObject.setTotalRow(mapper.getCount());
 		return mapper.list(pageObject);
 	}

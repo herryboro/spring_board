@@ -22,9 +22,10 @@ public class BoardController {
 	
 	// 게시판 리스트
 	@GetMapping("/list.do")
-	public String list(PageObject pageObject, Model model) {
+	public String list(PageObject pageObject, Model model) {	
 		model.addAttribute("list", boardService.list(pageObject));
 		model.addAttribute("pageObject", pageObject);
+		System.out.println("BoardController pageObject: " + pageObject);
 		return "/board/list";
 	}
 	

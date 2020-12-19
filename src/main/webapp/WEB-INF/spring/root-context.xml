@@ -26,11 +26,13 @@
 		<property name="password" value="1234" />
 
 	</bean>
+	
 	<!-- 서버가 시작되면 Connection을 만들어서 DBCP에 넣어둔다. 속도 -->
 	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource"
 		destroy-method="close">
 		<constructor-arg ref="hikariConfig" />
 	</bean>
+	
 	<!-- Mybaits - dao 코드 자동 생성 -->
 	<!-- mapper Interface(메서드이름) - mapper xml(sql) -->
 	<bean id="sqlSessionFactory"

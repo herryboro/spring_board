@@ -95,7 +95,7 @@ $(function() {
 	<!-- 데이터가 존재하면 데이터의 갯수 만큼 반복되어 지는 부분 -->
 	<c:forEach items="${list }" var="vo">
 	<tr class="dataRow">
-		<td class="no">${vo.no }</td>
+		<td class="no">${vo.rnum }</td>
 		<td>${vo.title }</td>
 		<td>${vo.writer }</td>
 		<td>

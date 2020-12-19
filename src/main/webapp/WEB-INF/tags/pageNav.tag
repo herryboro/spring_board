@@ -95,6 +95,6 @@ $(document).ready(function(){
   $('[data-toggle="tooltip"]').tooltip();
   $(".pagination").mouseover(function(){
 //   		$(".tooltip > *:last").css({"background-color": "red", "border": "1px dotted #444"});   
-	});
+  });
 });
 </script>

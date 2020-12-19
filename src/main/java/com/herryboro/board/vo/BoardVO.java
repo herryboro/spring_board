@@ -3,6 +3,7 @@ package com.herryboro.board.vo;
 import java.util.Date;
 
 public class BoardVO {
+	private int rnum;
 	private int no;
 	private String title, content, writer;
 	private Date writeDate;
@@ -52,9 +53,16 @@ public class BoardVO {
 		this.pw = pw;
 	}
 	
+	public int getRnum() {
+		return rnum;
+	}
+	public void setRnum(int rnum) {
+		this.rnum = rnum;
+	}
+	
 	@Override
 	public String toString() {
-		return "BoardVO [no=" + no + ", title=" + title + ", content=" + content + ", writer=" + writer + ", writeDate="
+		return "BoardVO [rnum = " + rnum + "no=" + no + ", title=" + title + ", content=" + content + ", writer=" + writer + ", writeDate="
 				+ writeDate + ", hit=" + hit + ", pw=" + pw + "]";
 	}
 	
