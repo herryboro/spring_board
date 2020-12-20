@@ -21,7 +21,10 @@ public class BoardService {
 		return mapper.list(pageObject);
 	}
 
-	public BoardVO view(int no) {
+	public BoardVO view(int no, int inc) {
+		if(inc == 1) {
+			mapper.increase(no);
+		}
 		return mapper.view(no);
 	}
 

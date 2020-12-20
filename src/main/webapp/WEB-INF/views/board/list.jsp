@@ -28,7 +28,11 @@ $(function() {
 	$(".dataRow").click(function(){
 		// 글번호 찾기
 		var no = $(this).find(".no").text();
-		location = "view.do?no="+ no + "&inc=1";
+		location = "view.do?no="+ no + "&inc=1"
+			+ "&page=${pageObject.page}&"
+			+ "perPageNum=${pageObject.perPageNum}"
+			+ "&key=${pageObject.key}&"
+			+ "&word=${pageObject.word}&";
 	});
 });
 </script>

@@ -25,17 +25,22 @@
 
 	<!-- 게시판 글보기 -->
 	<select id="view" resultType="com.herryboro.board.vo.BoardVO">
-		select no, title, content, writer,
-		writeDate, hit
+		select no, title, content, writer, writeDate, hit
 		from board
 		where no = #{no}
 	</select>
+	
+	<!-- 조회수 증가 -->
+	<update id="increase">
+		update board set hit = hit + 1 where no = #{no}
+	</update>
 
 	<!-- 게시판 글쓰기 -->
 	<insert id="write">
 		insert into board(no, title, content, writer, pw)
 		values(board_seq.nextval, #{title}, #{content}, #{writer}, #{pw})
 	</insert>
+	
 
 	<sql id="search">
 		<!-- 검색어가 존재하는 경우에만 검색을 실행 -->

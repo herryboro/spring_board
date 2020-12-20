@@ -31,8 +31,8 @@ public class BoardController {
 	
 	// 게시판 글보기
 	@GetMapping("/view.do")
-	public String view(int no, int inc, Model model) {
-		model.addAttribute("vo", boardService.view(no));
+	public String view(int no, int inc, Model model, PageObject pageObject) {
+		model.addAttribute("vo", boardService.view(no, inc));
 		return "board/view";
 	}
 	

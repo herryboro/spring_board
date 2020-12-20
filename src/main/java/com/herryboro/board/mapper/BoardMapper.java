@@ -18,7 +18,7 @@ public interface BoardMapper {
 	public BoardVO view(int no);
 	
 	// 조회수 증가
-	public Integer increase(int no);
+	public void increase(int no);
 	
 	// 게시판 글쓰기
 	public Integer write(BoardVO vo);
