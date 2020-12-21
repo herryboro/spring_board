@@ -65,9 +65,9 @@ $(function(){
 </tr>
 <tr>
 	<td colspan="2">
-		<a href="update.do?no=${vo.no }" class="btn btn-defualt">수정</a>
+		<a href="update.do?no=${vo.no}&inc=1" class="btn btn-defualt">수정</a>
 		<a href="#" class="btn btn-defualt" id="deleteBtn">삭제</a>
-		<a href="list.do" class="btn btn-defualt">리스트</a>
+		<a href="list.do?page=${param.page}&perPageNum=${param.perPageNum}&key=${param.key}&word=${param.word}" class="btn btn-defualt">리스트</a>
 	</td>
 </tr>
 </table>

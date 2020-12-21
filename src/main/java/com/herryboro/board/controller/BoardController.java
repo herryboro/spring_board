@@ -31,7 +31,7 @@ public class BoardController {
 	
 	// 게시판 글보기
 	@GetMapping("/view.do")
-	public String view(int no, int inc, Model model, PageObject pageObject) {
+	public String view(int no, int inc, Model model) {
 		model.addAttribute("vo", boardService.view(no, inc));
 		return "board/view";
 	}
@@ -52,12 +52,13 @@ public class BoardController {
 	// 게시판 수정폼
 	@GetMapping("/update.do")
 	public String updateForm(Model model, int no, int inc) {
+		model.addAttribute("vo", boardService.view(no, inc));
 		return "board/update";
 	}
 	
 	// 게시판 수정 처리
 	@PostMapping("/update.do")
-	public String update(BoardVO vo) {
+	public String update(BoardVO vo, PageObject pageObject) {
 		return "redirect:view.do?no=" + vo.getNo() + "&inc=0";
 	}
 	
