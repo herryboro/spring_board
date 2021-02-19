@@ -380,6 +380,365 @@ commit;
 
 select * from emp;
 
+-- 1. 테이블에서 특정 열( column ) 선택하기
 select empno, ename, sal
     from emp;
+    
+-- 2. 테이블에서 모든 열( column ) 출력하기
+select * from emp;
+
+    -- *표시를 사용하지 않았을때
+    select empno, ename, job, mgr, hiredate, sal, comm, deptno
+        from emp;
+    -- 특정 컬럼을 한번 더 출력해야 하는 경우 
+    select dept.*, deptno from dept;  -- *앞에 '테이블명.'을 붙여준다.
+    select dept.* from dept;
+    
+-- 3. 컬럼 별칭을 사용하여 출력되는 컬럼명 변경하기
+select empno as "사원 번호", ename as "사원 이름", sal as "Salary"
+    from emp;
+    
+    /* ""를 붙여야 할때 */
+      -- 1.대소문자를 구별해야 할때
+      -- 2.공백문자를 출력할때
+          ex) select empno as 사원 번호, ename as "사원 이름", sal as "Salary"
+                from emp;       -- 알리아스에 "" 가 없으면 공백시 에러발생     
+                
+              select empno as "사원 번호", ename as "사원 이름", sal as "Salary"
+                from emp;       -- ""가 있어 정상 출력됨
+      -- 3.특수문자를 출력할때
+         ex) select empno as 사원?번호, ename as "사원 이름", sal as "Salary"
+                from emp;       -- ""없이 ?를 출력 못함
+                
+             select empno as "사원?번호", ename as "사원 이름", sal as "Salary"
+                from emp;       -- 알리아스 정상 출력됨
+    
+    /* note */
+        select ename, sal * (12 + 3000)
+            from emp;
+            
+        -- 수식을 사용할때도 as 사용 가능
+        select ename, sal * (12 + 3000) as 월급
+            from emp;
+            
+        -- order by절과 함께 사용할때 유용
+        select ename, sal *(12 + 3000) as 월급
+            from emp
+            order by 월급 desc;
+            
+-- 4. 연결 연산자 사용하기
+select ename || sal
+    from emp;
+    
+    /* 예제 4-2 */
+    select ename || '의 월급은 ' || sal || '입니다.' as 월급정보
+        from emp;
+        
+    /* 예제 4-3 */
+    select ename || '의 직업은 ' || job || '입니다.' as 직업정보
+        from emp;
+        
+-- 5. 중복된 데이터를 제거해서 출력하기( distinct )
+select distinct job
+    from emp;
+    
+    /* unique를 대신 사용 */
+    select unique job
+        from emp;
+        
+-- 6. 데이터를 정렬해서 출력하기( order by )
+select ename, sal
+    from emp
+    order by sal asc;
+    
+    /* ASC: 오름차순, DESC: 내림차순 */
+    /* 예제 6-3 */
+    select ename, deptno, sal
+        from emp
+        order by deptno asc, sal desc;  -- order by 절에는 컬럼을 여러게 작성할 수 있다.
+    
+    /* 예제 6-4 */
+    select ename, deptno, sal
+        from emp
+        order by 2 asc, 3 desc; -- 여기서 2, 3은 select절 컬럼의 순서와 같다.( 2: deptno, 3: sal )
+
+-- 7. where 절 배우기 ① ( 숫자 데이터 검색 )
+select ename, sal, job
+    from emp
+    where sal = 3000;
+    
+    /* 예제 7-2 */ 
+    select ename as 이름, sal as 월급
+        from emp
+        where sal > = 3000;     -- 월급이 3000 이상인 사원들의 데이터만 출력
+        
+-- 8. where 절 배우기 ② ( 문자와 날짜 검색 )
+select ename, sal, job, hiredate, deptno
+    from emp
+    where ename = 'SCOTT';
+    
+    /* 예제8-2 */
+    select ename, hiredate
+        from emp
+        where hiredate = '81/11/17';    -- hiredate(고용일)이 '81/11/17' 인 사람의 이름과 고용일을 출력하는 쿼리
+        
+    /* 예제 8-3 */
+    select * from NLS_SESSION_PARAMETERS
+        where parameter = 'NLS_DATE_FORMAT';
+        
+-- 9. 산술 연산자 배우기 ( *, /, +, - )
+select ename, sal * 12 as 연봉
+    from emp
+    where sal * 12 >= 36000;    -- 연봉이 36000 이상인 사원들의 이름과 연봉 출력
+    
+    /* 예제 9-2 */
+    select ename, sal, comm, sal + comm 
+        from emp
+        where deptno = 10;      -- 부서번호가 10번인 사원들의 이름 ,월급, 커미션, 월급 + 커미션을 출력
+        /* 
+            값 + null 일 경우 => null 이 출력된다.
+        */
+        
+    select ename, sal, comm, sal + nvl(comm, 0) as "sal + comm"
+        from emp
+        where deptno = 10;  -- nvl()함수를 써서 comm이 null일 경우 0으로 치환해서 정상 출력 할수 있음.
+        
+-- 10. 비교 연산자 배우기 ① ( >, <, >=, <=, =, !=, <>, ^= )
+select ename, sal, job, deptno
+    from emp
+    where sal <= 1200;      -- 월급이 1200 이하인 사원들의 이름, 월급, 부서번호 출력
+
+-- 11. 비교 연산자 배우기 ② ( between and )
+select ename, sal 
+    from emp
+    where sal between 1000 and 3000;
+
+select ename, sal 
+    from emp
+    where sal >= 1000 and sal <= 3000;
+/* 위, 아래 쿼리는 같은 의미: 월급이 1000 이상 3000 이하인 사원의 이름, 월급을 출력 */
+
+    /* 예제 11-3 */ 
+    select ename, sal
+        from emp
+        where sal not between 1000 and 3000;
+    
+    select ename, sal
+        from emp
+        where sal < 1000 or sal > 3000;
+    /* 위, 아래 쿼리는 같은 의미: 월급이 1000 이상 3000 이하가 아닌 사원의 이름, 월급을 출력 */
+        
+    /* 예제 11-5 */ 
+    -- between ~ and 연산자를 사용하는것이 가독성이 좋다
+    select ename, hiredate 
+        from emp
+        where hiredate between '1982/01/01' and '1982/12/31';
+    
+-- 12. 비교 연산자 배우기 ③ ( like )
+select ename, sal
+    from emp
+    where ename like 'S%';
+/* 
+    %는 와일드 카드: 어떠한 철자가 와도 상관없고 철자의 개수가 몇 개가 되든 관계없다는 뜻 
+    이 쿼리에서는 S 다음 어떠한 철자가 와도 상관없다는 뜻.
+*/
+    /* 예제 12-2 */
+    select ename 
+        from emp
+        where ename like '_L%';     
+    /*
+        두번째 철자가 M 다음 어떠한 철자가 와도 상관없다, 
+        _는 어떠한 철자가 와도 상관없으나 자리수는 한 자릴여야 된다라는 의미
+        이 쿼리에서의 의미는 첫번째 자리는 무조건 한자리, 그 다음 L, 그 다음은 철자 갯수 상관없다.
+    */
+    
+    select ename 
+        from emp
+        where ename like '%L%';   
+    -- 이 쿼리에서는 앞에 % 가 붙어서 자리 개수 상관없이 여러개 나와도 된며, 여러 철자 나온 다음 L이 붙는건 다 출력한다.
+    
+    /* 예제 12-3 */ 
+    select ename
+        from emp
+        where ename like '%T';   -- 끝자리가 T인 사원들의 이름 출력
+    
+    /* 예제 12-4 */
+    select ename
+        from emp
+        where ename like '%A%';  -- 이름에 A를 포함하고 있는 사원들의 이름 출력
+        
+-- 13. 비교 연산자 배우기 ④ ( is NULL )
+select ename, comm
+    from emp
+    where comm is null;     -- 커미션 comm이 null인 사원의 이름, 커미션 출력
+ 
+    -- null은 할당되지 않은 값이기 때문에 아래와 같이 =로 비교할 수 없다.
+    select ename, comm
+        from emp
+        where comm = null;
+    
+-- 14. 비교 연산자 배우기 ⑤ ( IN )
+select ename, sal, job
+    from emp
+    where job in('SALESMAN', 'ANALYST', 'MANAGER');     -- 직업이 'SALESMAN', 'ANALYST', 'MANAGER' 인 사원들의 이름, 월급, 직업 출력
+    
+-- 15. 논리 연산자 배우기( AND, OR, NOT )
+select ename, sal, job
+    from emp
+    where job = 'SALESMAN' and sal >= 1200;     -- 직업이 'SALESMAN', 월급이 1200이상인 사원들의 이름, 월급, 직업 출력
+    
+-- 16. 대소문자 변환 함수 배우기( UPPER, LOWER, INITCAP )
+select upper(ename), lower(ename), initcap(ename)
+    from emp;       -- upper함수는 대문자로, lower함수는 소문자로, initcap함수는 첫 글자만 대문자로 출력해준다.
+    
+    /* 예제 16-2 */ 
+    select ename, sal
+        from emp
+        where lower(ename) = 'scott';       -- 대문자로 저장되어 있는 'SCOTT'를 lower함수를 통해 소문자로 변환했기 때문에 where 절로 'scott' 로 검색해도 출력할 수 있다.
+     
+    select ename, sal
+        from emp
+        where ename = 'scott';      -- lower 함수를 쓰지 않으면 테이블에 저장되어 있는 ename이 대문자이기 때문에 검색이 되지 않는다.
+        
+-- 17. 문자에서 특정 철자 추출하기( substr )
+select substr('SMITH', 1, 3)
+    from dual;      -- 첫번째 철자에서 3개 까지 출력
+    
+-- 18. 문자열의 길이를 출력하기( length )
+select ename, length(ename) 
+    from emp;       -- 이름, 이름의 길이를 출력
+    
+    /* 예제 18-2 */
+    select length('안녕하세요') from dual;       -- 한글의 길이도 출력된다.
+    
+    /* 예제 18-3 */
+    select lengthb('안녕하세요') from dual;       -- lengthb 는 해당 문자의 바이트의 길이를 출력한다.
+    select lengthb('a') from dual;              
+    select lengthb('ab') from dual;
+    select lengthb('ㄱ') from dual;
+    select lengthb('갈') from dual;              -- 영문자는 1 byte, 한글은 3 byte임을 알 수 있다.
+    
+-- 19. 문자에서 특정 철자의 위치 출력하기( instr )
+select instr('SMITH', 'M')
+    from dual;
+    
+    /* 예제 19-2 */
+    select instr('abcdefg@naver.com', '@')
+        from dual;      -- instr로 @의 위치를 출력
+        
+    select substr('abcdefg@naver.com', instr('abcdefg@naver.com', '@') + 1)
+        from dual;      -- 궁극적으로 substr('abcdefg@naver.com', 9)가 됨 => naver.com이 출력된다.
+        
+-- 20. 특정 철자를 다른 철자로 변경하기( replace )
+select ename, replace(sal, 0, '*') as 리네임
+    from emp;   -- replace()함수는 특정 철자를 다른 철자로 변경하는 문자 함수. 이 쿼리는 0을 *로 바꿔 출력한다.
+    
+    /* 예제 20-2 */
+    select ename, regexp_replace(sal, '[0-3]', '*') as Salary
+        from emp;   --  regexp_replace()함수는 정규표현식 함수, 이 쿼리에서는 0~3모든 수를 * 로 바꿔 출력한다.
+    
+    /* 예제 20-3 */   
+    CREATE TABLE TEST_ENAME
+    (ENAME   VARCHAR2(10));
+    
+    INSERT INTO TEST_ENAME VALUES('김인호');
+    INSERT INTO TEST_ENAME VALUES('안상수');
+    INSERT INTO TEST_ENAME VALUES('최영희');
+    COMMIT;
+    
+    select replace(ename, substr(ename, 2, 1), '*') as "전광판_이름"
+        from test_ename;
+    /* 
+        substr 함수로 2번째 위치의 문자열을 추출
+        -> replae 함수로 추출한 문자열을 '*' 로 변경
+    */
+    
+-- 21. 특정 철자를 N개 만큼 채우기 ( LPAD, RPAD )
+select ename, lpad(sal, 10, '*') as salary1, rpad(sal, 10, '*') as salary2
+    from emp;
+/*
+    lpad는 sal을 뒷쪽부터
+    rpad는 sal을 앞쪽부터 채운다.
+    나머지 빈곳은 *로 채운다.
+*/
+    /* 예제 21-2 */
+    select ename, sal, lpad('■', round(sal / 100), '■') as bar_chart
+        from emp;  
+        
+-- 22. 특정 철자 잘라내기( trim, rtrim, ltrim )
+select 'smith', ltrim('smith', 's'), rtrim('smith', 'h'), trim('s' from 'smith')
+    from dual;
+    
+    /* 예제 22-2 */
+    insert into emp(empno,ename,sal,job,deptno) values(8291, 'JACK  ', 3000, 'SALESMAN', 30);
+    commit;
+    
+    select ename, sal
+        from emp
+        where ename = 'JACK';       -- 위 INSERT 문에서 ename을 공백으로 했기 때문에, 데이터가 출력되지 않는다
+    
+    select ename, sal
+        from emp
+        where rtrim(ename) = 'JACK';     -- rtrim함수로 검색하면 공백을 없애주기 때문에 데이터가 정상 출력된다.
+        
+-- 23. 반올림해서 출력하기( round )
+select '876.567' as 숫자, round(876.567, 1)
+    from dual;  
+    
+    /* 예제 */
+    select round(876.567, 2) from dual;
+    select round(876.567, -1) from dual;
+    select round(876.567, -2) from dual;
+    select round(876.567, 0) from dual;
+    
+-- 24. 숫자를 버리고 출력하기( trunc )
+select '876.567' as 숫자, trunc(876.567, 1)
+    from dual;
+    
+     /* 예제 */
+     select '876.567' as 숫자, trunc(876.567, 2) from dual;
+     select '876.567' as 숫자, trunc(876.567, -1) from dual;
+     select '876.567' as 숫자, trunc(876.567, -2) from dual;
+     select '876.567' as 숫자, trunc(876.567, 0) from dual;
+     
+-- 25. 나눈 나머지 값 출력하기( MOD )
+select mod(10, 3) from dual;    -- 자바로 치면 10 % 3과 동일
+
+    /* 예제 25-2 */
+    select empno, mod(empno, 2) from emp; 
+    
+    /* 예제 25-3 */
+    select empno, ename
+        from emp
+        where mod(empno, 2) = 0;    -- empno가 짝수인 사원들의 이름을 출력
+    
+    /* 예제 25-3 */
+    select floor(10 / 3) from dual;     -- 10을 3으로 나눈 결과의 최소 정수를 출력
+
+-- 26. 날짜 간 개월 수 출력하기
+select ename, months_between(sysdate, hiredate) from emp;   --개월수 계산
+
+    /* 예제 26-2 */
+    select to_date('2019-06-01', 'RRRR-MM-DD') - to_date('2018-10-01', 'RRRR-MM-DD') as 일수
+        from dual;      -- 일수 계산
+    
+    /* 예제 26-3 */
+    select round((to_date('2019-06-01', 'RRRR-MM-DD') - to_date('2018-10-01', 'RRRR-MM-DD')) / 7 ) as "총 주수"
+        from dual;      -- 총 주일 계산
+
+-- 27. 개월 수 더한 날짜 출력하기( add_months )
+select add_months(to_date('2019-05-01', 'RRRR-MM-DD'), 100)
+    from dual;      -- 2019년 5월 1일에 100개월을 더한 날짜를 출력
+    
+    /* 예제 27-2 */
+    select to_date('2019-05-01', 'RRRR-MM-DD') + 100
+        from dual;      -- '2019-05-01' 에 100일을 더한 날짜를 출력
+   
+
+
+    
+
+
+
+
 
