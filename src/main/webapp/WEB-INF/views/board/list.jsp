@@ -64,7 +64,7 @@ $(function() {
        <option value="tcw" ${(pageObject.key == "tcw")? " selected ":"" }
        >전체</option>
       </select>
-       <input type="text" class="form-control" placeholder="Search"
+      <input type="text" class="form-control" placeholder="Search"
         name="word" value="${pageObject.word }">
       </div>
       <div class="input-group-btn">

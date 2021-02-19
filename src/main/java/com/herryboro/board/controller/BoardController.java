@@ -26,7 +26,7 @@ public class BoardController {
 		model.addAttribute("list", boardService.list(pageObject));
 		model.addAttribute("pageObject", pageObject);
 		System.out.println("BoardController pageObject: " + pageObject);
-		return "/board/list";
+		return "board/list";
 	}
 	
 	// 게시판 글보기
