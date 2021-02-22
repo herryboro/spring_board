@@ -727,13 +727,65 @@ select ename, months_between(sysdate, hiredate) from emp;   --개월수 계산
         from dual;      -- 총 주일 계산
 
 -- 27. 개월 수 더한 날짜 출력하기( add_months )
-select add_months(to_date('2019-05-01', 'RRRR-MM-DD'), 100)
+select add_months(to_date('2019-05-01', 'RRRR-MM-DD'), 100) as "date"
     from dual;      -- 2019년 5월 1일에 100개월을 더한 날짜를 출력
     
     /* 예제 27-2 */
-    select to_date('2019-05-01', 'RRRR-MM-DD') + 100
+    select to_date('2019-05-01', 'RRRR-MM-DD') + 100 as "date"
         from dual;      -- '2019-05-01' 에 100일을 더한 날짜를 출력
    
+    /* 예제 27-3 */
+    select to_date('2019-05-01', 'RRRR-MM-DD') + interval '100' month as "date"
+        from dual;      -- interval 함수를 이용하면 '30일', '31일' 계산을 알아서 해준다 ( 위의 add_months함수를 이용했을때와 결과가 같다. )
+    
+    /* 예제 27-4 */
+    select to_date('2019-05-01', 'RRRR-MM-DD') + interval '1-3' year to month as "date"
+        from dual;      -- 1년 3개월 후 날짜 계산하는 쿼리
+                        -- 이처럼 year가 1년 ~ 9년처럼 한자리인 경우는 그냥 interval '1' year 라 써줘도 무방
+        
+    select to_date('2019-05-01', 'RRRR-MM-DD') + interval '10-3' year(2) to month + interval '1' day as "date"
+        from dual;      -- 10년 3개월 1일 후 날짜 계산하는 쿼리                     
+                        -- 해당 쿼리처럼 10년 100년 이면 => interval '10' year(2), interval '100' year(3) 년도의 자릿수를 표시해줘야 한다.
+    
+    /* 예제 27-5 */
+    select to_date('2019-05-01', 'RRRR-MM-DD') +interval '3' year
+        from dual;      -- 3년 후 날짜 계산 쿼리
+    
+    /* 예제 27-6 */
+    select to_date('2019-05-01', 'RRRR-MM-DD') + to_yminterval('03-05') as 날짜
+        from dual;      -- 3년 5개월 후 날짜 출력 쿼리
+                        -- to_yminterval 함수 사용
+                
+-- 28. 특정 날짜 뒤에 오는 요일 날짜 출력( Next_Day )
+select '2021-02-21' as 날짜, next_day('2021-02-21', '월요일')
+    from dual;
+    
+    /* 예제 28-2 */
+    select sysdate as "오늘 날짜"
+        from dual;      -- 오늘 날짜 구해주는 sysdate 함수
+        
+    /* 예제 28-3 */
+    select next_day(sysdate, '화요일') as "다음 날짜"
+        from dual; 
+    
+    /* 예제 28-4 */
+    select next_day(add_months('2019-05-22', 100), '화요일') as "다음 날짜"
+        from dual;      -- 100달 뒤에 돌아오는 화요일 날짜 계산
+    
+    /* 예제 28-5 */
+    select next_day(add_months(sysdate, 100), '월요일') as "다음 날짜"
+        from dual;      -- 오늘 날짜부터 100달 뒤에 돌아오는 월요일 날짜 계산
+        
+-- 29. 특정 날짜가 있는 달의 마지막 날짜 출력하기( LAST_DAY )
+select '2019/05/22' as 날짜, last_day('2019/05/22') as "마지막 날짜"
+    from dual;      -- 5월은 5월 31일까지 있으니 그것이 출력됨
+
+-- 30. 문자형으로 데이터 유형 변환하기( TO_CHAR )
+select ename, to_char(hiredate, 'day') as 요일, to_char(sal, '999,999') as 월급
+    from emp
+    where ename = 'SCOTT';
+        
+    
 
 
     
