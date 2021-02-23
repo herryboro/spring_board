@@ -318,6 +318,12 @@ commit;
 
 
 
+
+
+
+
+
+
 -------------------------------------------------------------------------------------
 -- sql 200제
 
@@ -1118,6 +1124,56 @@ select ename, job, sal, ntile(4) over (order by sal desc nulls last) 등급
         from emp
         where deptno = 30
         order by comm desc nulls last;      -- nulls last가 있고 없고의 차이
+        
+-- 44. 데이터 분석 함수로 순위의 비율 출력하기 ( CUME_DIST )
+select ename, sal, rank() over(order by sal desc) as rank,
+        dense_rank() over(order by sal desc) as dense_rank,
+        cume_dist() over(order by sal desc) as cum_dist
+    from emp;
+    
+    /* 예제 44-2 */ 
+    select job, ename, sal, rank() over(partition by job order by sal desc) as rank,
+                                   cume_dist() over(partition by job order by sal desc) as cum_dist
+        from emp;
+        
+-- 45. 데이터 분석 함수로 데이터를 가로로 출력하기( LISTAGG )
+select deptno, listagg(ename, ' , ') within group(order by ename) as employee
+    from emp
+    group by deptno;        -- listagg() 함수는 데이터를 가로로 출력하는 함수
+                            -- order by ename은 employee 컬럼에 a,b,c ... 처럼 알파벳 순서대로 출력되게금 한다.
+                    
+    /* 예제45-2 */
+    select job, listagg(ename, ',') within group(order by ename) as employee
+        from emp
+        group by job;   -- 직업과 그 직업에 속한 사원들의 이름을 출력
+        
+    /* 예제45-3 */
+    select job,
+           listagg(ename || '(' || sal || ')', ',') within group (order by ename) as employee
+        from emp
+        group by job;   -- 위 예제에 + 이름 옆에 급여도 출력
+        
+-- 46. 데이터 분석 함수로 바로 전 행과 다음 행 출력하기( LAG, LEAD )
+select empno, ename, sal, lag(sal, 1) over(order by sal asc) "전 행",
+                          lead(sal, 1) over(order by sal asc) "다음 행"
+    from emp
+    where job in('ANALYST', 'MANAGER');     -- leg()함수는 바로 전 행, lead()함수는 다음 행의 데이터를 출력
+                                            -- lag(), lead() 함수의 각 두번째 매개변수 자리는 몇 번째 전, 후의 데이터를 출력할지 지정
+                                            
+    /* 예제 46-2 */
+    select empno, ename, hiredate, lag(hiredate, 1) over(order by hiredate asc) "전 행",
+                                   lead(hiredate, 1) over(order by hiredate asc) "다음 행"
+        from emp
+        where job in('ANALYST', 'MANAGER');     -- 직업이 'ANALYST', 'MANAGER' 인 사람들 중 사원번호, 이름, 입사일, 
+                                                -- 바로 전에 입사한 사원의 입사일, 바로 다음에 입사한 사원의 입사일을
+                                                
+    /* 예제 46-3 */
+    select deptno, empno, ename, hiredate, lag(hiredate, 1) over(partition by deptno order by hiredate asc) "전 행",
+                                           lead(hiredate, 1) over(partition by deptno order by hiredate asc) "다음 행"
+        from emp;      -- deptno을 기준으로 partition으로 후, 묶인 그룹을 기준으로 바로 전에 입사한 사원의 입사일, 바로 다음에 입사한 사원의 입사일을 출력
+    
+
+        
                                                     
                                                     
                                     
