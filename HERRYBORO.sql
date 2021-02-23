@@ -783,11 +783,350 @@ select '2019/05/22' as 날짜, last_day('2019/05/22') as "마지막 날짜"
 -- 30. 문자형으로 데이터 유형 변환하기( TO_CHAR )
 select ename, to_char(hiredate, 'day') as 요일, to_char(sal, '999,999') as 월급
     from emp
-    where ename = 'SCOTT';
+    where ename = 'SCOTT';     
+    /* 
+        - scott의 이름, 입사일(요일로), 월급 출력
+        - to_char은 문자열로 바꿔주는 함수
+            연도는 => YYYY,RRRR,YY,RR
+            월 => MM,MON
+            일 => DD
+            요일 => DAY,DY
+            주 => WW,IW,W
+            시간 => HH, HH24
+            분 => MI
+            초 => SS
+            
+            to_char(sal, '999,999')에서 '999,999'는 숫자 자릿수이고 0~9까지 어떤 숫자가 와도 상관없다는 의미, ( , )쉼표는 천 단위를 표시
+    */
+    
+    /* 예제 30-2 */
+    select hiredate as 오늘날짜, 
+            to_char(hiredate, 'RRRR') as 연도, 
+            to_char(hiredate,'MM') as 달,
+            to_char(hiredate, 'DD') as 일,
+            to_char(hiredate, 'day') as 요일
+        from emp
+        where ename = 'KING';   -- king의 입사날짜를 연도, 달, 일, 요일 로 표시
+    
+    /* 예제 30-3 */
+    select ename, hiredate
+        from emp
+        where to_char(hiredate, 'rrrr') = '1981'; -- 1981년에 입사한 사람들을 출력
+    
+    /* 예제 30-4 */
+    select ename as 이름, 
+            extract(year from hiredate) as 연도,
+            extract(month from hiredate) as 달,
+            extract(day from hiredate) as 요일
+        from emp
+        where extract(year from hiredate) = '1981';     -- extract함수로도 계산 가능하다.
+    
+    /* 예제 30-6 */
+    select ename as 이름, to_char(sal * 200, '999,999,999') as 월급
+        from emp;
+        
+    /* 예제 30-7 */
+    select ename as 이름, to_char(sal * 200, 'L999,999,999') as 월급
+        from emp;       -- 원화로 표시 가능하다.
+        
+-- 31. 날짜형으로 데이터 유형 변환하기 (TO_DATE)
+select ename, hiredate
+    from emp
+    where hiredate = to_date('1981/11/17', 'rr/mm/dd');
+    
+    /* 예제 31-2 */
+    select * from nls_session_parameters where parameter = 'NLS_DATE_FORMAT';
+    
+    /* 예제 31-3 */
+    select ename, hiredate
+        from emp
+        where hiredate = '1981-11-17';
+    
+    /* 예제 31-4 */
+    alter session set nls_date_format = 'rr/mm/dd';     -- 세션 날짜 포맷을 DD/MM/RR 형식으로 바꿔준다.
+    
+    select ename, hiredate
+        from emp
+        where hiredate = '17/11/81';
+        
+    /* 예제 31-5 */
+    select ename, hiredate
+        from emp
+        where hiredate = to_date('81/11/17', 'rr/mm/dd');   -- 세션에 형식에 상관없이 to_date 함수를 사용하여 년도 = rr, 월 = mm,일 = dd로 검색할 수 있다. 
+        
+-- 32. 암시적 형 변환 이해하기
+select ename, sal
+    from emp
+    where sal = '3000';     
+    /* 
+        sal은 숫자인데 문자 '3000'으로도 조회가 정삭적으로 되는것을 알 수 있다.
+        오라클은 문자형과 숫자형을 비교할 경우 => 문자형을 숫자형으로 형변환 한다.
+    */
+    
+    /* 예제 32-2 */
+    create table emp32 (
+        ename varchar2(10),
+        sal varchar2(10)
+    );
+    
+    insert into emp32 values('SCOTT', '3000');
+    insert into emp32 values('SMITH', '1200');
+    commit;   
+    
+    select * from emp32;
+    
+    set autot on
+    select * from emp32 where sal ='3000';
+    select * from emp32 where sal =3000;
+    
+-- 33. NULL값 대신 다른 데이터 출력하기( NVL, NVL2 )
+select ename, comm, nvl(comm, 0) from emp;      -- nvl()함수는 null을 지정한 다른 값으로 출력해준다.
+
+    /* 예제 33-2 */
+    select ename, sal, comm, sal + comm
+        from emp
+        where job in('SALESMAN', 'ANALYST');    
+    
+    /*  
+        NULL + SAL = NULL로 출력됨을 알 수 있다.
+        이럴 경우 봉급 + 커미션이 얼마인지 정확히 알 수 없다.
+        다음 예제 처럼 NVL함수를 사용하여 정확한 계산을 할 수 있다.
+    */     
+    
+    /* 예제 33-3 */
+    select ename, sal, comm, nvl(comm, 0), sal + nvl(comm, 0) as 총액
+        from emp
+        where job in('SALESMAN', 'ANALYST');
+    
+    /* 예제 33-3 */
+    select ename, sal, comm, nvl2(comm, sal + comm, sal) as 총액
+        from emp
+        where job in('SALESMAN', 'ANALYST');   
+        /*
+             nvl2함수는 nvl2(x, y, z) 일 경우 x의 값이 null 아닐 경우 y를 반환, null일 경우 z를 반환하는 함수이다.
+             이 쿼리에서는 커미션이 null이 아닐 경우 봉급+커미션 값을 반환하고
+             null일 경우 봉급만 반환하도록 하는 쿼리이다.
+        */
+
+-- 34. if문을 sql로 구현하기①
+select ename, deptno, decode(deptno, 10, 300, 20, 400, 0) as 보너스
+    from emp;   -- 부서번호가 10이면 300, 20이면 400, 10,20 모두 아니면 0이 출력, decode함수의 마지막 0은 default값
+    
+    /* 예제 34-2 */
+    select empno, mod(empno, 2), decode(mod(empno, 2), 0, '짝수', 1, '홀수') as 보너스
+        from emp;   
+    /*
+        decode함수를 사용하여 mod(사원번호, 2) 가 0이면 짝수, 1이면 홀수가 출력되게 만든 쿼리
+        default 값은 생략 가능하다.
+    */
+    
+    /* 예제 34-3 */
+    select ename, job, decode(job, 'SALESMAN', 5000, 2000) as 보너스
+        from emp;   -- decode 함수를 사용하여 job이 salesman이면 보너스 5000, 아니면 2000을 출력하도록 하는 쿼리
+        
+-- 35. if문을 sql로 구현하기②
+select ename, job, sal, case when sal >= 3000 then 500
+                             when sal >= 2000 then 300
+                             when sal >= 1000 then 200
+                             else 0 end as bonus
+    from emp 
+    where job in('SALESMAN', 'ANALYST');   
+    /*
+        조건을 만족하는 then을 출력
+        decode와 다른점
+            - decode는 등호( = )만 비교 가능
+            - case는 등호, 부등호 둘 다 비교 가능
+    */
+    
+    /* 예제 35-2 */
+    select ename, job, comm, case when comm is null then 500
+                                  else 0 end as bonus
+        from emp
+        where job in('SALESMAN', 'ANALYST');    -- 커미션이 null이면 500, 아니면 0을 출력
+    
+    /* 예제 35-3 */
+    select ename, job, case when job in('SALESMAN', 'ANALYST') then 500
+                            when job in('CLERK', 'MANAGER') then 400
+                       else 0 end as 보너스
+        from emp;
+        
+-- 36. 최대값 출력하기( MAX )
+select max(sal) from emp;
+    
+    /* 예제 36-2 */
+    select max(sal)
+        from emp
+        where job= 'SALESMAN';  -- job이 salesman중 봉급이 최대값을 출력
+    
+    /* 예제 36-3 */
+    select job, max(sal)
+        from emp
+        where job = 'SALESMAN';    
+    /*
+         - 에러가 나는 이유
+            job은 여러행이 출력되려고 하는데 sal은 max함수로 인해 1개만 출력되므로 에러가 발생한다.
+    */
+        
+    /* 예제 36-4 */
+    select job, max(sal)
+        from emp
+        where job = 'SALESMAN'
+        group by job;       -- group by를 해주면 정상출력된다.
+        
+    /* 예제 36-5 */
+    select deptno, max(sal)
+        from emp
+        group by deptno;    -- 부서번호 중 최대 봉급을 출력
+        
+-- 37. 최소값 출력하기( MIN )
+select min(sal)
+    from emp
+    where job = 'SALESMAN';
+    
+     /* 예제 37-2 */
+     select job, min(sal) 최소값
+        from emp
+        group by job
+        order by 최소값 desc;
+        
+     /* 예제 37-3 */
+     select min(sal)
+        from emp
+        where 1 = 2;    -- 그룹함수는 where 조건이 거짓이라도 정상 실행된다. ( null로 출력된다. )
+     
+     /* 예제 37-4 */
+     select nvl(min(sal), 0)
+        from emp
+        where 1=2;
+    
+    /* 예제 37-5 */
+    select job, min(sal) as "직급별 최소 급여"
+        from emp
+        where job != 'SALESMAN'
+        group by job
+        order by min(sal) desc;
+        
+-- 38. 평균값 출력하기 ( AVG )
+select avg(comm) from emp;  -- emp테이블의 모든 comm( 커미션 ) 평균
+    /*
+        그룹함수는 null값을 무시한다.
+        위 커리는 1400,300,0,500 만 평균값으로 계산한다.( null은 무시 ) 
+    */
+    
+    /* 예제 38-2 */
+    select round(avg(nvl(comm, 0))) from emp;
+    /*
+        nvl함수로 null값을 0으로 치환했다
+        고로 이전에는 null값을 무시해서 (전체 합산 / 4) 였던거에 반해 => (전체합산 / 15) 가 되어 평균값이 147이 되었다.
+    */
+
+-- 39. 토탈값 출력하기 ( SUM )
+select deptno, sum(sal)
+    from emp
+    group by deptno;    -- 부서번호 별 합산 급여
+    
+    /* 예제 39-2 */
+    select job, sum(sal)    
+        from emp
+        group by job
+        order by sum(sal) desc;     -- 직급 별 합산 급여를 내림차순으로
+    
+    /* 예제 39-3 */
+    select job, sum(sal)
+        from emp       
+        where sum(sal) >= 4000
+        group by job;       -- where절에 그룹 함수를 사용해 조건을 주면 허가되지 않는다고 에러발생
+        
+    /* 예제 39-4 */
+    select job, sum(sal)
+        from emp
+        group by job
+        having sum(sal) >= 4000
+        order by sum(sal) desc;     -- having절을 사용해서 조건을 주면 정상 처리된다.
+        
+    /* 예제 39-5 */
+    select job, sum(sal) as "총 월급"
+        from emp
+        where job != 'SALESMAN'
+        group by job
+        having sum(sal) >= 4000;         -- 'SALESMAN' 영업 제외한 나머지 직급 별 총 급여(4000 이상만)
         
     
+    select job, sum(sal) as "총 월급"
+        from emp
+        group by job
+        having sum(sal) >= 4000 and job != 'SALESMAN';     -- 이렇게 해도 되네?
+        
+-- 40. 건수 출력하기( COUNT )
+select count(empno) from emp;   -- emp테이블 전체 사원수 출력
+select count(*) from emp;       -- 위와 결과가 같다.
+    /*
+        count(empno)는 empno컬럼만 카운트, count(*) 은 전체 컬럼을 카운트
+    */
+    
+    /* 예제 40-2 */
+    select count(comm) from emp;    -- 그룹함수는 null값을 무시하기 때문에 전체 개수가 null을 제외한 4가 출력된다.
 
+-- 41. 데이터 분석 함수로 순위 출력하기 ① ( RANK )
+select ename, job, sal, rank() over (order by sal desc) 순위
+    from emp
+    where job in('ANALYST', 'MANAGER');     -- 봉급 순위 표시( 'ANALYST', 'MANAGER'만 )
+                                            -- rank() over(): over 괄호 안에 출력하고 싶은 데이터 넣으면 데이터에 따른 순위 출력
+                                            -- 중복이 있으면 다음 순위로 표시된다( ex)공동 1위가 있으면 다음 순위는 3위 )
+    
+    /* 예제 41-2 */
+    select ename, sal, job, rank() over(partition by job order by sal desc) as 순위
+        from emp;       -- partition by job => 직업별로 묶어서 순위 부여
 
+-- 42. 데이터 분석 함수로 순위 출력하기 ② ( DENSE RANK )
+select ename, job, sal, rank() over(order by sal desc) as rank, dense_rank() over(order by sal desc) as dense_rank
+    from emp
+    where job in('ANALYST', 'MANAGER');     -- rank() over() 함수와 dense_rank() over() 함수의 차이를 비교
+    
+    /* 예제 42-2 */
+    select job, ename, sal, dense_rank() over(partition by job order by sal desc) 순위
+        from emp
+        where hiredate between to_date('1981/01/01', 'rrrr/mm/dd') and
+                               to_date('1981/12/31', 'rrrr/mm/dd'); 
+    /* 
+        1981년에 입사한 사원들의 직종, 이름, 급여를 직종별로 묶어 임금 순위를 표시. 
+    */
+    
+    /* 예제 42-3 */
+    select dense_rank(2975) within group(order by sal desc) 순위
+        from emp;   -- 급여가 2975인 사원의 월급 순위를 출력
+                    -- dense_rank괄호 안의 데이터가 데이터 전체에서 순위가 어떻게 되는지 출력
+                    -- within group은 어느 그룹 내에서 순위가 어떻게 되는지 출력
+                
+     /* 예제 42-4 */
+     select dense_rank('81-11-17') within group(order by hiredate asc) 순위 from emp;
+        -- 입사일이 1981년 11월 17일인 사원이 전체 사원중 몇 번째로 입사했는지 순위를 표시
+        
+-- 43. 데이터 분석 함수로 등급 출력하기( NTILE )
+select ename, job, sal, ntile(4) over (order by sal desc nulls last) 등급
+    from emp
+    where job in('ANALYST', 'MANAGER', 'CLERK');    -- 월급이 높은 순서대로 4등분하여 등급 표시.
+                                                    -- nulls last는 null이 있으면 null을 맨 아래에 출력하겠다는 의미
+                                                    
+    /* 예제 43-2 */
+    select ename, comm 
+        from emp
+        where deptno = 30
+        order by comm desc;
+        
+    select ename, comm 
+        from emp
+        where deptno = 30
+        order by comm desc nulls last;      -- nulls last가 있고 없고의 차이
+                                                    
+                                                    
+                                    
+                    
+
+        
+    
+        
+    
     
 
 
