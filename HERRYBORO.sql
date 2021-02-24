@@ -1171,6 +1171,187 @@ select empno, ename, sal, lag(sal, 1) over(order by sal asc) "전 행",
     select deptno, empno, ename, hiredate, lag(hiredate, 1) over(partition by deptno order by hiredate asc) "전 행",
                                            lead(hiredate, 1) over(partition by deptno order by hiredate asc) "다음 행"
         from emp;      -- deptno을 기준으로 partition으로 후, 묶인 그룹을 기준으로 바로 전에 입사한 사원의 입사일, 바로 다음에 입사한 사원의 입사일을 출력
+        
+-- 47. COLUMN을 ROW로 출력하기① ( SUM + DECODE )
+select sum(decode(deptno, 10, sal)) as "10",
+       sum(decode(deptno, 20, sal)) as "20",
+       sum(decode(deptno, 30, sal)) as "30"       
+    from emp;   -- 부서번호별 총 급여
+    
+    /* 예제 47-2 */
+    select deptno, decode(deptno, 10, sal) as "10"
+        from emp;   -- 부서번호가 10이면 부서번호와 급여가 출력( 부서번호가 10이 아니면 급여가 null 출력 )
+        
+    /* 예제 47-5 */
+    select sum(decode(job, 'ANALYST', sal)) as "ANALYST",
+           sum(decode(job, 'CLERK', sal)) as "CLERK",
+           sum(decode(job, 'MANAGER', sal)) as "MANAGER",
+           sum(decode(job, 'SALESMAN', sal)) as "SALESMAN"
+        from emp;   -- 직업별 토탈 급여를 출력
+        
+    /* 예제 47-6 */
+    select deptno, sum(decode(job, 'ANALYST', sal)) as "ANALYST",
+           sum(decode(job, 'CLERK', sal)) as "CLERK",
+           sum(decode(job, 'MANAGER', sal)) as "MANAGER",
+           sum(decode(job, 'SALESMAN', sal)) as "SALESMAN"
+        from emp
+        group by deptno;    -- 위 예제에서 deptno를 추가
+        
+-- 48. COLUMN을 ROW로 출력하기② ( PIVOT )
+select * from (select deptno, sal from emp)
+         pivot(sum(sal) for deptno in (10, 20, 30));    -- 부서별 총 급여 ( 47번의 sum + decode를 사용한 결과와 동일 ), pivot()함수로 표현
+         
+    /* 예제 48-2 */
+    select * from(select job, sal from emp)
+             pivot(sum(sal) for job in('ANALYST', 'CLERK', 'MANAGER', 'SALESMAN'));
+    
+     /* 예제 48-3 */
+    select * from(select job, sal from emp)
+             pivot(sum(sal) for job in('ANALYST' as "ANALYST", 'CLERK' as "CLERK", 'MANAGER' as "MANAGER", 'SALESMAN' as "SALESMAN"));
+             
+-- 49. ROW를 COLUMN으로 출력하기 ( UNPIVOT )
+/*
+create table order2
+( ename  varchar2(10),
+  bicycle  number(10),
+  camera   number(10),
+  notebook  number(10) );
+
+insert  into  order2  values('SMITH', 2,3,1);
+insert  into  order2  values('ALLEN',1,2,3 );
+insert  into  order2  values('KING',3,2,2 );
+
+commit;*/
+select * from order2;
+
+select * from order2
+         unpivot(건수 for 아이템 in(BICYCLE, CAMERA, NOTEBOOK));
+         
+    /* 예제 49-2 */ 
+    select * from order2
+         unpivot(건수 for 아이템 in(BICYCLE as 'B', CAMERA as 'C', NOTEBOOK as 'N'));
+         
+    update order2 set NOTEBOOK = null where ename = 'SMITH';    -- null이 포함되어있으면 unpivot 결과에 포함되지 않는다.
+                                                                -- smith의 notebook을 null로 update 한 후 다시 unpivot 해보면 smith의 노트북이 출력되지 않는것을 확인할 수 있다.
+                                                                
+    /* 예제 49-3 */
+    select * from order2
+         unpivot include nulls(건수 for 아이템 in(BICYCLE as 'B', CAMERA as 'C', NOTEBOOK as 'N'));
+    -- unpivot include nulls을 하면 null값도 unpivot 할때 정상 출력됨을 확인할 수 있다.
+
+-- 50. 데이터 분석 함수로 누적 데이터 출력하기( SUM OVER )
+select empno, ename, job, sal, sum(sal) over(order by empno rows between unbounded preceding and current row) 누적치
+    from emp
+    where job in('ANALYST', 'MANAGER');     -- 직업이 analyst, manager인 사원들의 사원번호, 직책, 이름, 급여, 급여의 누적치를 출력
+    
+-- 51. 데이터 분석 함수로 비율 출력하기( RATIO_TO_REPORT )
+select empno, deptno, ename, sal, ratio_to_report(sal) over() as 비율
+    from emp
+    where deptno = 20;      -- 부서번호가 20번인 사원들의 사원번호, 부서번호, 이름, 급여, 20번 부서 내에서의 급여 비율을 출력
+
+select sum(sal) as 합계
+    from emp
+    where deptno = 20;      -- 부서번호 20번의 총 급여
+    
+-- 52. 데이터 분석 함수로 집계 결과 출력하기①( ROLLUP )
+select job, sum(sal)
+    from emp
+    group by rollup(job);   -- 직급별 토탈 급여 출력 및 맨 아래쪽에 전체 급여를 추가
+                            -- rollup을 사용하면 맨 아래 토탈 급여도 출력되고 job 컬럼의 데이터도 오름차순으로 정렬되어 출력
+                
+    /* 예제 52-2 */
+    select deptno, job, sum(sal)
+        from emp
+        group by rollup(deptno, job);
+        
+-- 53. 데이터 분석 함수로 집계 결과 출력하기② ( CUBE )
+select job, sum(sal) 
+    from emp
+    group by cube(job);     
+    
+select deptno, sum(sal) 
+    from emp
+    group by cube(deptno);      -- cube를 사용하면 맨 위쪽에 토탈 급여가 추가, 부서 번호도 오름차순으로 정렬
+    
+    /* 예제 53-2 */
+    select deptno, job, sum(sal) 
+        from emp
+        group by cube(deptno, job);     -- group by rollup과 비교해서 => job 토탈에 대한 집계가 추가됨
+        
+-- 54. 데이터 분석 함수로 집계 결과 출력하기 ③ ( GROUPING SETS )
+select deptno, job, sum(sal) 
+    from emp
+    group by grouping sets((deptno), (job), ());    -- 부선번호별, 직업별, 전체 집계
+                                                    -- group by rollup 보다 결과를 예측하기 더 쉽다.
+                                                    
+-- 55. 데이터 분석 함수로 출력 결과 넘버링 하기(ROW_NUMBER)
+select empno, ename, sal, rank() over(order by sal desc) rank,
+                          dense_rank() over(order by sal desc) dense_rank,
+                          row_number() over(order by sal desc) 번호
+    from emp
+    where deptno = 20;
+    
+    /* 예제 55-3 */
+    select deptno, ename, sal, row_number() over(partition by deptno order by sal desc) 번호
+        from emp
+        where deptno in(10, 20);
+        
+-- 56. 출력되는 행 제한하기 ① (ROWNUM)
+select rownum, empno, ename, job, sal
+    from emp
+    where rownum <= 5;
+    
+-- 57. 출력되는 행 제한하기 ② ( Simple TOP-n Queries )
+select empno, ename, job, sal
+    from emp
+    order by sal desc 
+    FETCH FIRST 4 ROWS ONLY;        -- 11g에서는 안됨 -.-;
+    
+-- 58. 여러 테이블의 데이터를 조인해서 출력하기 ① ( EQUI JOIN )
+select ename, loc
+    from emp, dept
+    where emp.deptno = dept.deptno;
+    
+    /* 예제 58-4 */
+    select ename, loc, job 
+        from emp,dept
+        where emp.deptno = dept.deptno and emp.job = 'ANALYST';
+    
+    /* 예제 58-5 */
+    select ename, loc, job, deptno
+        from emp, dept
+        where emp.deptno = dept.deptno and emp.job = 'ANALYST';
+        
+    /* 예제 58-6 */
+    select ename, loc, job, emp.deptno
+        from emp, dept
+        where emp.deptno = dept.deptno and emp.job = 'ANALYST';
+
+    /* 예제 58-7 */
+    select emp.ename, dept.loc, emp.job, emp.deptno
+        from emp, dept
+        where emp.deptno = dept.deptno and emp.job = 'ANALYST';    -- 권장 사항
+    
+    /* 예제 58-8 */
+    select e.ename, d.loc, e.job, e.deptno
+        from emp e, dept d
+        where e.deptno = d.deptno and e.job = 'ANALYST';    -- 알리아스로 줄여쓸 수 있다.
+   
+
+    
+    
+
+
+    
+
+    
+
+
+
+
+    
+    
+   
     
 
         
