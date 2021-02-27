@@ -1336,7 +1336,73 @@ select ename, loc
     select e.ename, d.loc, e.job, e.deptno
         from emp e, dept d
         where e.deptno = d.deptno and e.job = 'ANALYST';    -- 알리아스로 줄여쓸 수 있다.
-   
+        
+-- 59. 여러 테이블의 데이터를 조인해서 출력하기 ②( NON-EQUI JOIN )
+select e.ename, e.sal, s.grade
+    from emp e, salgrade s 
+    where e.sal between s.losal and s.hisal;
+
+-- 60. 여러 테이블의 데이터를 조인해서 출력하기 ③( OUTER JOIN )
+select e.ename, d.loc
+    from emp e, dept d
+    where e.deptno(+) = d.deptno;
+    
+-- 61. 여러 테이블의 데이터를 조인해서 출력하기 ④( SELF JOIN )
+select e.ename as 사원이름,e.empno as 사원번호, e.job as 부서, m.ename as 관리자, m.empno as 사원번호, m.job as 부서
+    from emp e, emp m
+    where e.mgr = m.empno and e.job = 'SALESMAN';
+    
+-- 62. 여러 테이블의 데이터를 조인해서 출력하기 ⑤( ON절 )
+select e.ename as 이름, e.job as 직업, e.sal as 월급, d.loc as "부서 위치"
+    from emp e join dept d
+    on (e.deptno = d.deptno)
+    where e.job = 'SALESMAN';
+    
+-- 63. 여러 테이블의 데이터를 조인해서 출력하기 ⑤( USING절 )
+select e.ename as 이름, e.job as 직업, e.sal as 월급, d.loc as "부서 위치"
+    from emp e join dept d
+    using (deptno)  -- 알리아스 쓰면 에러난다. 컬럼명 자체를 입력해야 된다.
+    where e.job = 'SALESMAN';
+    
+-- 64. 여러 테이블의 데이터를 조인해서 출력하기 ⑥( NATURAL JOIN )
+select e.ename as 이름, e.job as 직업, e.sal as 월급, d.loc as "부서 위치"
+    from emp e natural join dept d
+    where e.job = 'SALESMAN';
+    
+-- 65. 여러 테이블의 데이터를 조인해서 출력하기 ⑦( LEFT/RIGHT OUTER JOIN )
+select e.ename as 이름, e.job as 직업, e.sal as 월급, d.loc as "부서 위치"
+    from emp e right outer join dept d
+    on (e.deptno = d.deptno);
+    
+    -- left outerjoin을 위한 사전작업
+    insert into emp(empno, ename, sal , job, deptno) values(8282, 'JACK', 3000, 'ANALYST', 50);
+
+select e.ename as 이름, e.job as 직업, e.sal as 월급, d.loc as "부서 위치"
+    from emp e left outer join dept d
+    on (e.deptno = d.deptno);
+    
+-- 66. 여러 테이블의 데이터를 조인해서 출력하기 ⑧( FULL OUTER JOIN )
+select e.ename as 이름, e.job as 직업, e.sal as 월급, d.loc as "부서 이름"
+    from emp e full outer join dept d
+    on(e.deptno = d.deptno);
+    
+-- 67. 집합 연산자로 데이터를 위아래로 연결하기 ①( UNION ALL )
+select deptno, sum(sal) as 합계
+    from emp
+    group by deptno
+union all
+select to_number(null) as deptno, sum(sal)
+    from emp
+    order by 합계 asc;    -- order by에 sum(sal) 컬럼명을 써주면 에러 발생 => 확인 요망
+    
+    
+    
+
+    
+    
+    
+    
+
 
     
     
