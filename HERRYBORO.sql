@@ -1392,9 +1392,94 @@ select deptno, sum(sal) as 합계
     group by deptno
 union all
 select to_number(null) as deptno, sum(sal)
-    from emp
-    order by 합계 asc;    -- order by에 sum(sal) 컬럼명을 써주면 에러 발생 => 확인 요망
+    from emp;
+ 
     
+-- 68. 집합 연산자로 데이터를 위아래로 연결하기 ②( UNION )
+select deptno, sum(sal)
+    from emp
+    group by deptno
+union
+select null as deptno, sum(sal)
+    from emp;
+    
+-- 69. 집합 연산자로 데이터를 위아래로 연결하기 ③( INTERSECT )
+select ename, sal, job, deptno
+    from emp
+    where deptno in (10, 20)
+intersect
+select ename, sal, job, deptno
+    from emp
+    where deptno in (20,30);
+    
+-- 70. 집합 연산자로 데이터를 위아래로 연결하기 ③( MINUS )
+select ename, sal, job, deptno
+    from emp
+    where deptno in (10, 20)
+minus
+select ename, sal, job, deptno
+    from emp
+    where deptno in (20, 30);
+    
+-- 71. 서브쿼리 사용하기 ① ( 단일행 서브쿼리 )
+select ename, sal
+    from emp
+    where sal > (select sal
+                    from emp
+                    where ename = 'JONES');
+
+select ename, sal
+    from emp
+    where sal = (select sal
+                    from emp
+                    where ename = 'SCOTT')
+    and ename != 'SCOTT';
+    
+-- 72. 서브쿼리 사용하기 ② ( 다중 행 서브쿼리 )
+select ename, sal
+    from emp
+    where sal in (select sal from emp where job = 'SALESMAN');
+    
+-- 73. 서브쿼리 사용하기 ③ ( NOT IN )
+select ename, sal, job
+    from emp
+    where empno not in (select mgr from emp where mgr is not null);
+    
+-- 74. 서브쿼리 사용하기 ④ ( EXISTS와 NOT EXISTS )
+select * from dept d
+    where exists(select * from emp e where e.deptno = d.deptno);
+    
+    /* 예제 74-2 */
+    select * from dept d
+        where not exists(select * from emp e where e.deptno = d.deptno);
+        
+-- 75. 서브쿼리 사용하기 ⑤ ( HAVING절의 서브 쿼리 )
+select job, sum(sal)
+    from emp
+    group by job
+    having sum(sal) > (select sum(sal)
+                            from emp
+                            where job = 'SALESMAN');
+                            
+-- 76. 서브쿼리 사용하기 ⑥ ( FROM절의 서브 쿼리 )
+select v.ename, v.sal, v.순위
+    from (select ename, sal, rank() over(order by sal desc) 순위
+            from emp) v
+    where v.순위 = 1; 
+    
+-- 77. 서브쿼리 사용하기 ⑦ ( SELECT절의 서브 쿼리 )
+select ename, sal, (select max(sal) from emp where job = 'SALESMAN') as "최대 월급",
+                   (select min(sal) from emp where job = 'SALESMAN') as "최소 월급"
+    from emp
+    where job = 'SALESMAN';
+    
+
+    
+
+    
+
+    
+
     
     
 
