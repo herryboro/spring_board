@@ -382,6 +382,8 @@ insert into salgrade  values(3,1401,2000);
 insert into salgrade  values(4,2001,3000);
 insert into salgrade  values(5,3001,9999);
 
+grant dba to HERRYBORO;
+
 commit;
 
 select * from emp;
@@ -1473,6 +1475,227 @@ select ename, sal, (select max(sal) from emp where job = 'SALESMAN') as "최대 월
     from emp
     where job = 'SALESMAN';
     
+-- 78. 데이터 입력하기( INSERT )
+insert into emp(empno, ename, sal, hiredate, job) values(2812,'JACK', 3500, to_date('2019/06/05', 'rrrr/mm/dd'), 'ANALYST');
+
+--79. 데이터 수정하기( UPDATE )
+update emp set sal = 3200 where ename = 'SCOTT';
+
+    /* 예제 79-2( 서브쿼리를 사용한 업데이트 ) */
+    update emp set sal = (select sal from emp where ename = 'KING')
+        where ename = 'SCOTT';
+        
+-- 80. 데이터 삭제하기( DELETE, TRUNCATE, DROP )
+delete from emp where ename = 'SCOTT';
+delete from emp where empno = 2812;
+SELECT * FROM EMP;
+
+-- 81. 데이터 저장 및 취소하기( COMMIT, ROLLBACK )
+insert into emp(empno, ename, sal, deptno) values(1122, 'JACK', 3000, 20);
+commit;
+
+update emp set sal = 4000 where ename = 'JACK';
+rollback;
+
+select * from emp;
+
+-- 82 데이터 입력, 수정, 삭제 한번에 하기( MERGE )
+merge into emp e
+using dept d
+on(e.deptno = d.deptno)
+when matched then
+update set e.loc = d.loc
+when not matched then
+insert(e.empno, e.deptno, e.loc) values (1111, d.deptno, d.loc);
+
+alter table emp add loc varchar2(10);
+
+select * from emp;
+select * from dept;
+
+-- 85. 서브 쿼리를 사용하여 데이터 입력하기 
+create table emp2 as select * from emp where 1 = 2;
+
+insert into emp2(empno, ename, sal, deptno) 
+    select empno, ename, sal, deptno from emp where deptno = 10;    -- values 대신에 입력하고픈 서브쿼리를 써준다.
+    
+select * from emp2;
+
+-- 86. 서브 쿼리를 사용하여 데이터 수정하기
+update emp 
+    set sal = (select sal 
+                    from emp
+                    where ename = 'ALLEN')
+    where job = 'SALESMAN';
+    
+select * from emp order by job;
+
+update emp                                         -- set절에 여러 컬럼을 기술하여 한번에 갱신도 가능
+    set (sal, comm) = (select sal, comm 
+                    from emp
+                    where ename = 'ALLEN')
+    where job = 'SALESMAN';
+    
+-- 87. 서브 쿼리를 사용하여 데이터 삭제하기
+select * from emp;
+delete from emp where sal > (select sal
+                                from emp
+                                where ename = 'JONES');
+                                
+    /* 예제 87-2 */
+    delete from emp m
+        where sal > (select avg(sal)
+                        from emp s
+                        where s.deptno = m.deptno);
+                        
+-- 88. 서브 쿼리를 사용하여 데이터 합치기
+alter table dept add sumsal number(10);
+select * from emp;
+select * from dept;
+
+merge into dept d
+using(select deptno, sum(sal) sumsal
+        from emp
+        group by deptno) v
+on(d.deptno = v.deptno)
+when matched then
+update set d.sumsal = v.sumsal;
+
+/* 82번 merge 예제
+merge into emp e
+using dept d
+on(e.deptno = d.deptno)
+when matched then
+update set e.loc = d.loc
+when not matched then
+insert(e.empno, e.deptno, e.loc) values (1111, d.deptno, d.loc); */
+
+-- 89. 계층형 질의문으로 서열을 주고 데이터 출력하기 ①
+select * from emp;
+
+select rpad(' ', level * 3) || ename as employee, level, sal, job
+    from emp
+    start with ename = 'KING'
+    connect by prior empno = mgr;
+    
+-- 90. 계층형 질의문으로 서열을 주고 데이터 출력하기 ②
+select rpad(' ', level * 3) || ename as employee, level, sal, job
+    from emp
+    start with ename = 'KING'
+    connect by prior empno = mgr and ename != 'BLAKE';
+    
+-- 91. 계층형 질의문으로 서열을 주고 데이터 출력하기 ③
+select rpad(' ', level * 3) || ename as employee, level, sal, job
+    from emp
+    start with ename = 'KING'
+    connect by prior empno = mgr
+    order siblings by sal desc;     -- order by 사이에 siblings 를 사용하면 계층의 서열 순서를 깨트리지 않고 출력
+    
+select rpad(' ', level * 3) || ename as employee, level, sal, job
+    from emp
+    start with ename = 'KING'
+    connect by prior empno = mgr
+    order by sal desc;      -- order by 사이에 siblings 를 사용하지 않았을때
+    
+-- 92. 계층형 질의문으로 서열을 주고 데이터 출력하기 ④
+select ename, sys_connect_by_path(ename, '/') as path
+    from emp
+    start with ename = 'KING'
+    connect by prior empno = mgr;
+    
+    /* 예제 92-2 */
+    select ename, ltrim(sys_connect_by_path(ename, '/'), '/') as path
+        from emp
+        start with ename = 'KING'
+        connect by prior empno = mgr;
+        
+-- 93. 일반 테이블 생성하기( CREATE TABLE )
+create table emp01(
+    empno number(10),
+    ename varchar2(10),
+    sal number(10, 2),
+    hiredate date
+);
+
+select * from emp01;
+
+-- 95. 복잡한 쿼리를 단순하게 하기 ① ( VIEW )
+create view emp_view
+    as
+    select empno, ename, sal, job, deptno
+        from emp
+        where job = 'SALESMAN';
+        
+select * from emp_view;
+
+-- 98. 중복되지 않는 번호 만들기( SEQUECE )
+create sequence seq1
+start with 1
+increment by 1
+maxvalue 100
+nocycle;
+
+insert into emp02 values(seq1.nextval, 'JACK', 3500);
+insert into emp02 values(seq1.nextval, 'JAMES', 4500);
+
+select * from emp02;    -- empno가 1씩 자동증가
+
+-- 99. 실수로 지운 데이터 복구 ① ( Flashback Query )
+select * from emp;
+
+select * from emp
+    as of timestamp(systimestamp - interval '5' minute)
+    where ename = 'KING';
+
+select systimestamp from dual;                          -- 현재 시간
+select systimestamp - interval '5' minute from dual;    -- 5분전의 시간
+
+update emp set sal = 0 where ename = 'KING';
+commit;
+
+-- 100. 실수로 지운 데이터 복구 ② ( Flashback Table )
+alter table emp enable row movement;
+select row_movement from user_tables where table_name = 'EMP';
+flashback table emp to timestamp(systimestamp - interval '5' minute);
+
+-- 104. 데이터의 품질 높이기 ① (Primar Key)
+create table dept2(
+    deptno number(10) constraint dept2_deptno_pk primary key,
+    dname varchar2(14),
+    loc varchar2(10)
+);
+
+    /* 예제 104-2 */    
+    create table dept3(
+        deptno number(10),
+        dname varchar2(14),
+        loc varchar2(10)
+    );
+    
+    alter table dept3 add constraint dept3_deptno_pk primary key(deptno);   -- 테이블 생성 이후에 primary key 추가하는 쿼리
+    
+-- 107. 데이터의 품질 높이기 ④ ( check )
+create table emp6(
+    empno number(10),
+    ename varchar2(20),
+    sal number(10) constraint emp6_sal_ck check(sal between 0 and 6000)
+);
+
+select * from emp6;
+insert into emp6(sal) values(6000);
+update emp6 set sal = 5900;     -- check제약으로 인해( 0 ~ 6000) sal 값을 6001로 업데이트시 에러
+
+
+
+        
+
+
+
+
+                        
+
+
+
 
     
 
