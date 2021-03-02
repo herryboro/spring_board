@@ -1683,7 +1683,27 @@ create table emp6(
 
 select * from emp6;
 insert into emp6(sal) values(6000);
-update emp6 set sal = 5900;     -- check제약으로 인해( 0 ~ 6000) sal 값을 6001로 업데이트시 에러
+update emp6 set sal = 6001;     -- check제약으로 인해( 0 ~ 6000) sal 값을 6001로 업데이트시 에러
+
+/* 체크 제약 삭제 */
+alter table emp6 drop constraint emp6_sal_ck;
+
+-- 108. 데이터 품질 높이기 ⑤
+create table dept7(
+    deptno number(10) constraint dept7_deptno_pk primary key,
+    dname varchar2(14),
+    loc varchar2(10)
+);
+
+create table emp7(
+    empno number(10),
+    ename varchar2(20),
+    sal number(10),
+    deptno number(10) constraint emp7_deptno_fk references dept7(deptno)
+);
+
+-- 109. 데이터 품질 높이기 ⑥
+
 
 
 
