@@ -1302,6 +1302,7 @@ select empno, ename, sal, rank() over(order by sal desc) rank,
 select rownum, empno, ename, job, sal
     from emp
     where rownum <= 5;
+
     
 -- 57. 출력되는 행 제한하기 ② ( Simple TOP-n Queries )
 select empno, ename, job, sal
