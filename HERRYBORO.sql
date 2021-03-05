@@ -1579,6 +1579,13 @@ select rpad(' ', level * 3) || ename as employee, level, sal, job
     start with ename = 'KING'
     connect by prior empno = mgr;
     
+--
+
+select rpad(' ', level * 3) || ename as employee, level, sal, job
+    from emp
+    start with ename = 'KING'
+    connect by prior empno = mgr and level <=3;
+    
 -- 90. 계층형 질의문으로 서열을 주고 데이터 출력하기 ②
 select rpad(' ', level * 3) || ename as employee, level, sal, job
     from emp
@@ -1703,7 +1710,59 @@ create table emp7(
     deptno number(10) constraint emp7_deptno_fk references dept7(deptno)
 );
 
--- 109. 데이터 품질 높이기 ⑥
+-- 109. with절 사용하기 ① ( with ~ as )
+with job_sumsal as (select job, sum(sal) as 토탈
+                        from emp
+                        group by job)
+select job, 토탈 from job_sumsal
+    where 토탈 > (select avg(토탈)
+                    from job_sumsal);
+
+/*                    
+with job_sumsal as (select job, sum(sal) as 토탈
+                        from emp
+                        group by job)
+select avg(토탈) as "전체 평균" from job_sumsal; */
+
+    /* 예제 109-2 (with절 없이 서브쿼리 만으로) */
+    select job, sum(sal) as 토탈
+        from emp
+        group by job 
+        having sum(sal) > (select avg(sum(sal))
+                              from emp
+                              group by job);
+                              
+-- 110. with절 사용하기 ② ( subquery factoring )
+with job_sumsal as (select job, sum(sal) 토탈
+                        from emp
+                        group by job), 
+     deptno_sumsal as (select deptno, sum(sal) 토탈
+                            from emp
+                            group by deptno
+                            having sum(sal) > (select avg(토탈) + 3000
+                                                   from job_sumsal))
+select deptno, 토탈
+    from deptno_sumsal;
+    
+-- 111. SQL로 알고리즘 문제 풀기 ①
+with loop_table as (select level as num
+                        from dual
+                        connect by level <= 9)
+select '2' || ' x ' || num || ' = ' || 2 * num as "2단"
+    from loop_table;
+    
+-- 112. SQL로 알고리즘 문제 풀기 ②
+with loop_table as (select level as num
+                        from dual
+                        connect by level <= 9),
+     gugu_table as (select level + 1 as gugu
+                        from dual
+                        connect by level <= 8)
+select to_char(a.num) || ' x ' || to_char(b.gugu) || ' = ' || to_char(b.gugu * a.num) as 구구단
+    from loop_table a, gugu_table b;
+
+ 
+
 
 
 
