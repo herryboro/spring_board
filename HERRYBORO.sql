@@ -433,7 +433,7 @@ select empno as "사원 번호", ename as "사원 이름", sal as "Salary"
         select ename, sal *(12 + 3000) as 월급
             from emp
             order by 월급 desc;
-            
+       select * from emp;     
 -- 4. 연결 연산자 사용하기
 select ename || sal
     from emp;
